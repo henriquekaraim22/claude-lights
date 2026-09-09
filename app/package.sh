@@ -18,6 +18,17 @@ mkdir -p "$BUNDLE/Contents/MacOS" "$BUNDLE/Contents/Resources"
 cp "$BUILD_DIR/ClaudeLights" "$BUNDLE/Contents/MacOS/ClaudeLights"
 cp "$APP_DIR/../assets/spark.svg" "$BUNDLE/Contents/Resources/spark.svg" 2>/dev/null || true
 
+# Bundle the hook installer itself so the app can set up Claude Code
+# integration on first launch (HookInstaller.swift), instead of requiring
+# the recipient to clone the repo and run install.sh by hand. install.sh
+# finds "hooks/" relative to its own location, so keeping that same layout
+# inside Resources means it works unmodified when run from the bundle.
+mkdir -p "$BUNDLE/Contents/Resources/hooks"
+cp "$APP_DIR/../install.sh" "$BUNDLE/Contents/Resources/install.sh"
+cp "$APP_DIR/../hooks/hook.sh" "$BUNDLE/Contents/Resources/hooks/hook.sh"
+cp "$APP_DIR/../hooks/state.py" "$BUNDLE/Contents/Resources/hooks/state.py"
+chmod +x "$BUNDLE/Contents/Resources/install.sh" "$BUNDLE/Contents/Resources/hooks/hook.sh"
+
 cat > "$BUNDLE/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

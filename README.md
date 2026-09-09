@@ -36,17 +36,24 @@ The hook is the only thing that ever plays a sound, so alerts keep working even 
 
 ## Install
 
+### From a .dmg (easiest — no terminal)
+
+Download `ClaudeLights.dmg` from [Releases](../../releases), open it, and drag **Claude Lights** into **Applications**. On first launch, the app itself offers a **Set up integration** button — that's the only setup step, it copies the hook script and adds it to `~/.claude/settings.json` for you.
+
+Since the app is signed locally (not notarized by Apple), the first launch will show a "developer cannot be verified" warning — right-click the app and choose **Open** once to get past it.
+
+### From source
+
 ```bash
 git clone https://github.com/<your-username>/claude-lights.git
 cd claude-lights
-./install.sh          # copies the hook and merges it into ~/.claude/settings.json
-cd app && ./package.sh release
-open .build/ClaudeLights.app
+cd app && ./package.sh release   # builds and packages .build/ClaudeLights.app
+open .build/ClaudeLights.app     # click "Set up integration" on first launch
 ```
 
-`install.sh` backs up your existing `~/.claude/settings.json` before touching it, and only adds hook entries that aren't already there — running it again is safe.
+Building the `.dmg` yourself: `cd app && ./make-dmg.sh` (packages the app first if needed, produces `app/.build/ClaudeLights.dmg`).
 
-Drag `app/.build/ClaudeLights.app` to `/Applications` and turn on **Open at login** in the menu if you want it to start automatically. Since the app is signed locally (not notarized by Apple), the first launch will show a "developer cannot be verified" warning — right-click the app and choose **Open** once to get past it.
+Prefer the terminal? `./install.sh` from the repo root does the same thing the app's **Set up integration** button does — copies the hook and merges it into `~/.claude/settings.json`, backing up your existing file first. Either one is safe to re-run.
 
 ## Customizing
 

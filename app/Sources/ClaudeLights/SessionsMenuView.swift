@@ -18,6 +18,11 @@ struct SessionsMenuView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
+            if !sessionStore.hooksInstalled {
+                SetupBanner(sessionStore: sessionStore)
+                divider()
+            }
+
             sectionLabel("Sessions")
 
             if sessionStore.sessions.isEmpty {
@@ -140,6 +145,58 @@ struct SessionsMenuView: View {
             .frame(height: 1)
             .padding(.vertical, 4)
             .padding(.horizontal, 4)
+    }
+}
+
+/// Shown at the top of the menu when hooks/state.py isn't installed yet —
+/// a fresh download, before "Set up" is clicked. Runs HookInstaller and
+/// tells SessionStore to recheck immediately once it finishes, so this
+/// banner disappears on success without waiting for the next poll tick.
+private struct SetupBanner: View {
+    @ObservedObject var sessionStore: SessionStore
+    @State private var isInstalling = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Claude Lights isn't connected to Claude Code yet.")
+                .font(.system(size: 13, weight: .medium))
+            Text("Set up copies a small hook script to ~/.claude and adds it to your Claude Code settings.")
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.system(size: 11))
+                    .foregroundColor(Color(red: 0.89, green: 0.33, blue: 0.31))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Button(action: install) {
+                Text(isInstalling ? "Setting up…" : "Set up integration")
+                    .font(.system(size: 12, weight: .medium))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 5)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .disabled(isInstalling)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+    }
+
+    private func install() {
+        isInstalling = true
+        errorMessage = nil
+        HookInstaller.install { result in
+            isInstalling = false
+            sessionStore.recheckHooksInstalled()
+            if !result.succeeded {
+                errorMessage = "Setup failed. \(result.output.trimmingCharacters(in: .whitespacesAndNewlines))"
+            }
+        }
     }
 }
 

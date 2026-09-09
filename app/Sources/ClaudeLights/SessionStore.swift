@@ -27,6 +27,9 @@ final class SessionStore: ObservableObject {
 
     @Published private(set) var sessions: [SessionInfo] = []
     @Published private(set) var aggregated: AggregatedStatus = .empty
+    /// Whether hooks/state.py is actually installed at ~/.claude/claude-status/
+    /// — false right after a fresh download until HookInstaller.install() runs.
+    @Published private(set) var hooksInstalled: Bool = HookInstaller.isInstalled
 
     private var pollTimer: Timer?
     private var hasStarted = false
@@ -51,7 +54,15 @@ final class SessionStore: ObservableObject {
         pollTimer?.invalidate()
     }
 
+    /// Called right after HookInstaller.install() finishes, so the menu
+    /// reflects "installed" immediately instead of waiting for the next
+    /// 0.5s poll tick.
+    func recheckHooksInstalled() {
+        hooksInstalled = HookInstaller.isInstalled
+    }
+
     private func poll() {
+        hooksInstalled = HookInstaller.isInstalled
         let fm = FileManager.default
         guard let files = try? fm.contentsOfDirectory(
             at: Self.sessionsDir, includingPropertiesForKeys: nil

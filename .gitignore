@@ -1,0 +1,9 @@
+# Swift build artifacts (includes the packaged .app)
+app/.build/
+app/.swiftpm/
+
+# macOS
+.DS_Store
+
+# Local install backups created by install.sh (contain machine-specific paths)
+*.backup-*

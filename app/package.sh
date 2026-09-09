@@ -18,6 +18,12 @@ mkdir -p "$BUNDLE/Contents/MacOS" "$BUNDLE/Contents/Resources"
 cp "$BUILD_DIR/ClaudeLights" "$BUNDLE/Contents/MacOS/ClaudeLights"
 cp "$APP_DIR/../assets/spark.svg" "$BUNDLE/Contents/Resources/spark.svg" 2>/dev/null || true
 
+echo "gerando ícone..."
+"$APP_DIR/make-icon.sh"
+if [ -f "$APP_DIR/.build/ClaudeLights.icns" ]; then
+  cp "$APP_DIR/.build/ClaudeLights.icns" "$BUNDLE/Contents/Resources/ClaudeLights.icns"
+fi
+
 # Bundle the hook installer itself so the app can set up Claude Code
 # integration on first launch (HookInstaller.swift), instead of requiring
 # the recipient to clone the repo and run install.sh by hand. install.sh
@@ -35,6 +41,8 @@ cat > "$BUNDLE/Contents/Info.plist" <<'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key>
+    <string>ClaudeLights</string>
+    <key>CFBundleIconFile</key>
     <string>ClaudeLights</string>
     <key>CFBundleIdentifier</key>
     <string>dev.henriquekaraim.claudelights</string>

@@ -58,7 +58,8 @@ struct SessionsMenuView: View {
 
             SwitchRow(
                 title: "Force max volume",
-                subtitle: "Briefly overrides your Mac's own volume right before every alert, then restores it. This also affects any other audio playing at that instant, like a call or music.",
+                titleSize: 15,
+                subtitle: "Briefly overrides your Mac's volume for every alert — also affects music or calls playing at that moment.",
                 isOn: Binding(
                     get: { soundSettings.isEnabled },
                     set: { soundSettings.setEnabled($0) }
@@ -167,28 +168,28 @@ private struct Row<Content: View>: View {
     }
 }
 
-/// A settings row with a real switch on the right, title on the left, and
-/// an optional explanatory line underneath — used instead of a plain
-/// clickable row + checkmark (2026-09-09: the user asked for actual toggles
-/// here, matching the native macOS Settings convention, and for the
-/// force-volume one specifically to explain what it does, not just show a
-/// check).
+/// A settings row with a dot indicator on the right, title on the left, and
+/// an optional explanatory line underneath.
+///
+/// 2026-09-09: went from a plain row + checkmark, to a native `Toggle`
+/// switch, and back to a check-style indicator again — the user tried the
+/// switch live and found it "ficou muito ruim" (came out badly). What they
+/// asked for instead: a filled dot when on, an outlined dot when off — not
+/// the system switch, not a checkmark glyph either. `DotToggle` below.
 private struct SwitchRow: View {
     let title: String
+    var titleSize: CGFloat = 13
     let subtitle: String?
     @Binding var isOn: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(title)
-                    .font(.system(size: 13))
+                    .font(.system(size: titleSize))
                     .foregroundColor(.primary)
                 Spacer()
-                Toggle("", isOn: $isOn)
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-                    .labelsHidden()
+                DotToggle(isOn: $isOn)
             }
 
             if let subtitle {
@@ -196,9 +197,28 @@ private struct SwitchRow: View {
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 2)
             }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
+    }
+}
+
+/// A filled blue dot when on, an outlined dot when off — the check-style
+/// indicator the user asked for in place of the native switch.
+private struct DotToggle: View {
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Button(action: { isOn.toggle() }) {
+            Circle()
+                .fill(isOn ? Color.accentColor : Color.clear)
+                .overlay(
+                    Circle().strokeBorder(isOn ? Color.clear : Color.white.opacity(0.45), lineWidth: 1.5)
+                )
+                .frame(width: 16, height: 16)
+        }
+        .buttonStyle(.plain)
     }
 }

@@ -102,6 +102,11 @@ Revisado em 2026-09-09 com mockup (estrutura inspirada no menu do Granola que o 
 - **RF16** Quando ligado, um slider "Force volume to" (50%-100%, default 100%) aparece logo abaixo, só nesse estado. O hook sobe o volume real do sistema pra esse valor (`osascript set volume output volume <nível>`) por ~2s antes de tocar o som e devolve ao valor anterior depois — afeta qualquer áudio tocando nesse instante (chamada, música), não só o alerta. Copy no menu deixa isso explícito.
 - **Testado de ponta a ponta com medição real 2026-09-09**: volume do sistema baixado pra 15, `force_max_volume=1` e nível 90, som disparado via hook — volume real leu 90 durante o som e voltou pra 15 sozinho alguns segundos depois. Bateu exatamente com o esperado.
 
+**Som de "Done" configurável (adicionado 2026-09-10):**
+- **RF17** Só o som de `done` pode ser trocado pelo usuário. `waiting_question`/`waiting_permission` (Ping) e `error` (Sosumi) continuam fixos, sem UI nenhuma pra eles — decisão explícita do usuário.
+- **RF18** Seletor customizado (não um `Picker`/menu nativo do SwiftUI — esse não dispara hover nas opções, é controlado pelo NSMenu do sistema): linha "Done sound" que expande numa lista das 14 opções reais. Hover em qualquer opção toca ela na hora (via `NSSound`, preview da UI, não o `afplay` do hook); clique seleciona e recolhe a lista.
+- **RF19** Persistido em `~/.claude/claude-status/done_sound` (nome sem extensão); `state.py` valida contra a lista de 14 antes de usar, cai no padrão `Glass` se o arquivo não existir ou tiver algo inválido.
+
 ### 6.4 Instalação
 
 - Script `install.sh` que: cria `~/.claude/claude-status/`, copia o `hook.sh`, mergeia o bloco `hooks` em `~/.claude/settings.json` sem sobrescrever o que já existe, e faz backup do arquivo original.

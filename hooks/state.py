@@ -31,9 +31,33 @@ SOUNDS_DIR = "/System/Library/Sounds"
 SOUND_MAP = {
     "waiting_question": "Ping.aiff",
     "waiting_permission": "Ping.aiff",
-    "done": "Glass.aiff",
     "error": "Sosumi.aiff",
 }
+
+# "done" is the only sound the user can customize (2026-09-09, explicit
+# request: "o único som que pode ser trocado é esse, todos os outros não
+# podem ser alterados") — kept out of SOUND_MAP on purpose so it can never
+# be looked up the same static way as the other three. VALID_SOUNDS is the
+# same 14-file list confirmed by ear earlier in the project (see CLAUDE.md);
+# anything else read from the config file is ignored, falling back to the
+# default, rather than trusting an unexpected value.
+DONE_SOUND_FILE = os.path.join(STATUS_DIR, "done_sound")
+DEFAULT_DONE_SOUND = "Glass"
+VALID_SOUNDS = {
+    "Basso", "Blow", "Bottle", "Frog", "Funk", "Glass", "Hero",
+    "Morse", "Ping", "Pop", "Purr", "Sosumi", "Submarine", "Tink",
+}
+
+
+def get_done_sound():
+    try:
+        with open(DONE_SOUND_FILE) as f:
+            name = f.read().strip()
+        if name in VALID_SOUNDS:
+            return f"{name}.aiff"
+    except Exception:
+        pass
+    return f"{DEFAULT_DONE_SOUND}.aiff"
 
 DONE_MIN_DURATION_S = 10  # RF4: só toca "concluído" se o turno durou mais que isso
 
@@ -268,7 +292,9 @@ def main():
     if new_state in ("waiting_question", "waiting_permission") and prev_state != new_state:
         sound_to_play = new_state
 
-    if sound_to_play:
+    if sound_to_play == "done":
+        play_sound(get_done_sound())
+    elif sound_to_play:
         play_sound(SOUND_MAP[sound_to_play])
 
     save_state(session_id, {

@@ -102,6 +102,8 @@ struct SessionsMenuView: View {
                 .padding(.vertical, 6)
             }
 
+            DoneSoundPicker(soundSettings: soundSettings)
+
             divider()
 
             sectionLabel("Claude Lights v\(Self.appVersion)")
@@ -270,5 +272,85 @@ private struct SwitchRow: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
+    }
+}
+
+/// The "Done sound" row — click to expand a list of all 14 real system
+/// sounds, hover any option to preview it, click one to select it. Only
+/// "done" gets this treatment (2026-09-09, explicit request): Ping and
+/// Sosumi stay fixed, no picker for them anywhere in this menu.
+private struct DoneSoundPicker: View {
+    @ObservedObject var soundSettings: SoundSettings
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Row(action: { isExpanded.toggle() }) {
+                HStack {
+                    Text("Done sound")
+                        .font(.system(size: 13))
+                    Spacer()
+                    Text(soundSettings.doneSound)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(SoundSettings.availableSounds, id: \.self) { name in
+                        SoundOptionRow(
+                            name: name,
+                            isSelected: name == soundSettings.doneSound,
+                            onSelect: {
+                                soundSettings.setDoneSound(name)
+                                isExpanded = false
+                            }
+                        )
+                    }
+                }
+                .padding(.leading, 12)
+                .onDisappear { SoundPreview.stop() }
+            }
+        }
+    }
+}
+
+/// One sound name in the expanded list — hovering plays it immediately
+/// (stopping whatever was previewing before), clicking selects it.
+private struct SoundOptionRow: View {
+    let name: String
+    let isSelected: Bool
+    let onSelect: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack {
+                Text(name)
+                    .font(.system(size: 12))
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .medium))
+                }
+            }
+            .foregroundColor(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(isHovered ? Color.white.opacity(0.06) : Color.clear)
+            .cornerRadius(8)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovered = hovering
+            if hovering {
+                SoundPreview.play(name)
+            }
+        }
     }
 }

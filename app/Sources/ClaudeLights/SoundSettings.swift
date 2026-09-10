@@ -22,9 +22,23 @@ import Combine
 final class SoundSettings: ObservableObject {
     private let enabledFile = SessionStore.statusDir.appendingPathComponent("force_max_volume")
     private let levelFile = SessionStore.statusDir.appendingPathComponent("force_volume_level")
+    private let doneSoundFile = SessionStore.statusDir.appendingPathComponent("done_sound")
 
     static let defaultLevel: Double = 100
     static let levelRange: ClosedRange<Double> = 50...100
+
+    /// The 14 real files in /System/Library/Sounds — confirmed by actually
+    /// listing that directory and test-playing every one earlier in the
+    /// project (see CLAUDE.md); never a guessed or translated name again
+    /// after that whole saga. "done" is the only sound with a picker at all
+    /// (2026-09-09, explicit request: "o único som que pode ser trocado é
+    /// esse, todos os outros não podem ser alterados") — Ping and Sosumi
+    /// stay hardcoded in hooks/state.py's SOUND_MAP, no UI for them.
+    static let availableSounds = [
+        "Basso", "Blow", "Bottle", "Frog", "Funk", "Glass", "Hero",
+        "Morse", "Ping", "Pop", "Purr", "Sosumi", "Submarine", "Tink",
+    ]
+    static let defaultDoneSound = "Glass"
 
     /// Off by default — genuinely invasive: when on, the hook briefly pushes
     /// the Mac's real system volume to `levelPercent` right before playing
@@ -33,10 +47,12 @@ final class SoundSettings: ObservableObject {
     @Published var isEnabled: Bool
     /// Only meaningful while `isEnabled` is true.
     @Published var levelPercent: Double
+    @Published var doneSound: String
 
     init() {
         isEnabled = Self.readEnabled(from: SessionStore.statusDir.appendingPathComponent("force_max_volume"))
         levelPercent = Self.readLevel(from: SessionStore.statusDir.appendingPathComponent("force_volume_level"))
+        doneSound = Self.readDoneSound(from: SessionStore.statusDir.appendingPathComponent("done_sound"))
     }
 
     func setEnabled(_ value: Bool) {
@@ -51,6 +67,13 @@ final class SoundSettings: ObservableObject {
         try? String(format: "%.0f", value).write(to: levelFile, atomically: true, encoding: .utf8)
     }
 
+    func setDoneSound(_ value: String) {
+        guard Self.availableSounds.contains(value) else { return }
+        doneSound = value
+        try? FileManager.default.createDirectory(at: SessionStore.statusDir, withIntermediateDirectories: true)
+        try? value.write(to: doneSoundFile, atomically: true, encoding: .utf8)
+    }
+
     private static func readEnabled(from url: URL) -> Bool {
         guard let text = try? String(contentsOf: url, encoding: .utf8) else { return false }
         return text.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
@@ -61,5 +84,11 @@ final class SoundSettings: ObservableObject {
               let value = Double(text.trimmingCharacters(in: .whitespacesAndNewlines))
         else { return defaultLevel }
         return min(max(value, levelRange.lowerBound), levelRange.upperBound)
+    }
+
+    private static func readDoneSound(from url: URL) -> String {
+        guard let text = try? String(contentsOf: url, encoding: .utf8) else { return defaultDoneSound }
+        let name = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return availableSounds.contains(name) ? name : defaultDoneSound
     }
 }

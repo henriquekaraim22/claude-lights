@@ -8,6 +8,10 @@ CONFIG="${1:-release}"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$APP_DIR/.build/$CONFIG"
 BUNDLE="$APP_DIR/.build/ClaudeLights.app"
+# Single source of truth for the version — read here, and by the app itself
+# at runtime (Bundle.main, SessionsMenuView's footer) so it's never typed
+# in two places that can drift apart again.
+VERSION="$(cat "$APP_DIR/VERSION")"
 
 echo "compilando ($CONFIG)..."
 swift build -c "$CONFIG" --package-path "$APP_DIR"
@@ -35,7 +39,7 @@ cp "$APP_DIR/../hooks/hook.sh" "$BUNDLE/Contents/Resources/hooks/hook.sh"
 cp "$APP_DIR/../hooks/state.py" "$BUNDLE/Contents/Resources/hooks/state.py"
 chmod +x "$BUNDLE/Contents/Resources/install.sh" "$BUNDLE/Contents/Resources/hooks/hook.sh"
 
-cat > "$BUNDLE/Contents/Info.plist" <<'PLIST'
+cat > "$BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -49,9 +53,9 @@ cat > "$BUNDLE/Contents/Info.plist" <<'PLIST'
     <key>CFBundleName</key>
     <string>Claude Lights</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.1</string>
+    <string>$VERSION</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>$VERSION</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSUIElement</key>

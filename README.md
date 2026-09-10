@@ -62,6 +62,16 @@ Prefer the terminal? `./install.sh` from the repo root does the same thing the a
 - **The menu bar sparkle**: [`assets/spark.svg`](assets/spark.svg) is traced directly into [`SparkShape.swift`](app/Sources/ClaudeLights/SparkShape.swift) as a native SwiftUI `Shape`; swap in your own mark by re-tracing its path.
 - **The app icon** (Finder, Dock, the .dmg): replace [`assets/icon-source.png`](assets/icon-source.png) (a single 320x320-or-larger square PNG) — `app/make-icon.sh` derives every size macOS needs from it automatically, `package.sh` calls it on every build.
 
+## Releasing
+
+The version lives in one place, [`app/VERSION`](app/VERSION) — `package.sh` reads it into `Info.plist`, and the app reads it back from there at runtime for the menu footer, so it can't drift out of sync.
+
+```bash
+cd app && ./release.sh 0.2.0
+```
+
+This bumps `VERSION`, commits, builds, tags `v0.2.0`, pushes the commit and tag, and opens GitHub's new-release page with the tag and title already filled in. The only manual step left is dragging `app/.build/ClaudeLights.dmg` onto that page and clicking **Publish release** — there's no `gh` CLI dependency here, so that upload can't be scripted without a personal access token, which this project deliberately doesn't hold.
+
 ## Uninstall
 
 Remove the hook entries from `~/.claude/settings.json` (or restore one of the `settings.json.backup-*` files `install.sh` made), delete `~/.claude/claude-status/`, and remove the app from `/Applications`.

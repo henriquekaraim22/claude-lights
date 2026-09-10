@@ -16,6 +16,15 @@ struct SessionsMenuView: View {
     @ObservedObject var soundSettings: SoundSettings
     @State private var loginItemEnabled = LoginItemManager.isEnabled
 
+    /// Read straight from the bundle's own Info.plist (CFBundleShortVersionString,
+    /// itself generated from app/VERSION by package.sh) instead of a second
+    /// hardcoded literal here — those two used to drift (Info.plist said "0.1",
+    /// this footer said "v0.1" too, but nothing enforced they'd ever match on
+    /// a real version bump). One source of truth now.
+    private static var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             if !sessionStore.hooksInstalled {
@@ -95,7 +104,7 @@ struct SessionsMenuView: View {
 
             divider()
 
-            sectionLabel("Claude Lights v0.1")
+            sectionLabel("Claude Lights v\(Self.appVersion)")
 
             Row(action: { NSApp.terminate(nil) }) {
                 Text("Quit")

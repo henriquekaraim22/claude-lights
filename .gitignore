@@ -1,5 +1,11 @@
 # Swift build artifacts (includes the packaged .app)
+# Both variants ignored on purpose: a stray "app/build/" (no dot) showed up
+# once after moving the project folder mid-session (probably a leftover
+# from a build that failed right after the move, before the module cache
+# got cleaned) and nearly got committed via `git add -A` — hundreds of
+# .pcm/.swiftmodule files. Never actually tracked, caught before the commit.
 app/.build/
+app/build/
 app/.swiftpm/
 
 # macOS

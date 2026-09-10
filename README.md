@@ -14,7 +14,7 @@ A tiny macOS menu bar indicator for [Claude Code](https://claude.com/claude-code
   - **Red, "Error"** — a turn failed.
 - Plays a sound the moment Claude needs you or a turn fails, so you don't have to keep the window in view.
 - Tracks every Claude Code session on your machine at once (multiple tabs, multiple projects) and shows the single most urgent one.
-- Click the icon for the full list of active sessions.
+- Click the icon for the full list of active sessions, plus a couple of settings: open at login, and an optional "force max volume" for alerts (briefly overrides your Mac's own volume so you don't miss one, even if it's turned down).
 
 ## How it works
 
@@ -45,7 +45,7 @@ Since the app is signed locally (not notarized by Apple), the first launch will 
 ### From source
 
 ```bash
-git clone https://github.com/<your-username>/claude-lights.git
+git clone https://github.com/henriquekaraim22/claude-lights.git
 cd claude-lights
 cd app && ./package.sh release   # builds and packages .build/ClaudeLights.app
 open .build/ClaudeLights.app     # click "Set up integration" on first launch
@@ -59,7 +59,8 @@ Prefer the terminal? `./install.sh` from the repo root does the same thing the a
 
 - **Sounds**: edit `SOUND_MAP` in [`hooks/state.py`](hooks/state.py) — any file in `/System/Library/Sounds/` works. Re-run `./install.sh` after editing.
 - **Icon colors**: edit `SessionState.color` in [`app/Sources/ClaudeLights/Models.swift`](app/Sources/ClaudeLights/Models.swift).
-- **The icon itself**: [`assets/spark.svg`](assets/spark.svg) is traced directly into [`SparkShape.swift`](app/Sources/ClaudeLights/SparkShape.swift) as a native SwiftUI `Shape`; swap in your own mark by re-tracing its path.
+- **The menu bar sparkle**: [`assets/spark.svg`](assets/spark.svg) is traced directly into [`SparkShape.swift`](app/Sources/ClaudeLights/SparkShape.swift) as a native SwiftUI `Shape`; swap in your own mark by re-tracing its path.
+- **The app icon** (Finder, Dock, the .dmg): replace [`assets/icon-source.png`](assets/icon-source.png) (a single 320x320-or-larger square PNG) — `app/make-icon.sh` derives every size macOS needs from it automatically, `package.sh` calls it on every build.
 
 ## Uninstall
 
